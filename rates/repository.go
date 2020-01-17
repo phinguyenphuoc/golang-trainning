@@ -30,25 +30,22 @@ func (rp *Repository) GetLatestRate() (*LatestRate, error) {
 	lastestDate, err := rp.GetLastestDate()
 	// fmt.Println(lastestDate, err)
 	if err != nil {
-		return &LatestRate{}, nil
+		return &LatestRate{}, err
 	}
 	//get data from db
 	query := fmt.Sprintf("SELECT currency, rate FROM Cube WHERE reg_date LIKE '%s'", lastestDate)
 	results, err := rp.DB.Query(query)
 
 	if err != nil {
-		return &LatestRate{}, nil
+		return &LatestRate{}, err
 	}
 
 	//loop through data
 	for results.Next() {
 		var currency string
 		var rate string
-		err = results.Scan(&currency, &rate)
+		results.Scan(&currency, &rate)
 		data[currency] = rate
-		if err != nil {
-			panic(err.Error()) // proper error handling instead of panic in your app
-		}
 	}
 	rateResult.Rate = data
 	return &rateResult, nil
@@ -106,7 +103,5 @@ func (rp *Repository) GetLastestDate() (string, error) {
 	for result.Next() {
 		result.Scan(&date)
 	}
-
-	fmt.Println(date)
 	return date, nil
 }
