@@ -2,7 +2,6 @@ package rates
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -27,7 +26,7 @@ func (hd *Handler) GetRates(w http.ResponseWriter, r *http.Request) {
 	prefix := r.URL.Path
 	result, err := hd.Uc.GetRates(prefix)
 	if err != nil {
-		fmt.Println("err")
+		return
 	}
 	json.NewEncoder(w).Encode(result)
 }

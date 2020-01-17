@@ -1,11 +1,20 @@
 package db
 
 import (
+	"os"
 	"testing"
 
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestInitDBFail(t *testing.T) {
+	dbi := CreateDB()
+	os.Setenv("MYSQL_DATABASE", "oracle")
+	err := dbi.InitDB()
+	assert.NotEqual(t, nil, err)
+
+}
 
 func TestInitDBSuccess(t *testing.T) {
 	err := godotenv.Load("../.env")
