@@ -27,12 +27,12 @@ func (m *RepositoryMock) GetRateViaDate(date string) (*RateViaDate, error) {
 
 func (m *RepositoryMock) GetAverageCurrency() (*AverageRate, error) {
 	args := m.Called()
-	return args.Get(0).(*AverageRate), args.Error(0)
+	return args.Get(0).(*AverageRate), args.Error(1)
 }
 
 func (m *RepositoryMock) GetLastestDate() (string, error) {
 	args := m.Called()
-	return args.String(0), args.Error(0)
+	return args.String(0), args.Error(1)
 }
 
 func TestGetLatestRate(t *testing.T) {
