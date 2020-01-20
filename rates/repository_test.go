@@ -35,6 +35,10 @@ func (m *RepositoryMock) GetLastestDate() (string, error) {
 	return args.String(0), args.Error(1)
 }
 
+func (m *RepositoryMock) ImportData(currency, rate, date string) error {
+	args := m.Called(currency, rate, date)
+	return args.Error(0)
+}
 func TestGetLatestRate(t *testing.T) {
 	t.Run("test get latest rate success", func(t *testing.T) {
 		t.Parallel()
@@ -145,6 +149,39 @@ func TestGetAverageCurrency(t *testing.T) {
 		rp := NewRepository(db)
 		result, err := rp.GetAverageCurrency()
 		assert.Empty(t, result)
+		assert.NotEqual(t, nil, err)
+	})
+}
+
+func TestImportData(t *testing.T) {
+	t.Run("Import data success", func(t *testing.T) {
+		t.Parallel()
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+		}
+		currency := "USD"
+		rate := "1.5"
+		date := "2020-01-01"
+		query := "INSERT INTO Cube"
+		mock.ExpectExec(query).WithArgs(currency, rate, date).WillReturnResult(sqlmock.NewResult(12, 1))
+		rp := NewRepository(db)
+		err = rp.ImportData(currency, rate, date)
+		assert.Equal(t, nil, err)
+	})
+	t.Run("Import data fail", func(t *testing.T) {
+		t.Parallel()
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+		}
+		currency := "USD"
+		rate := "1.5"
+		date := "2020-01-01"
+		query := "INSERT INTO Cube"
+		mock.ExpectExec(query).WithArgs(currency, rate, date).WillReturnError(errors.New("DB error"))
+		rp := NewRepository(db)
+		err = rp.ImportData(currency, rate, date)
 		assert.NotEqual(t, nil, err)
 	})
 }

@@ -12,6 +12,7 @@ func routes(db db.DBInterface) {
 	rateRepository := rates.NewRepository(db.GetDB())
 	rateUsecase := rates.NewUsecase(rateRepository)
 	ratesHandler := rates.NewHandler(rateUsecase)
+	ratesHandler.SyncData()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/lastest-rate", ratesHandler.GetRates)

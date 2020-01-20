@@ -8,6 +8,7 @@ import (
 //HandlerInterface interface
 type HandlerInterface interface {
 	GetRates(w http.ResponseWriter, r *http.Request)
+	SyncData()
 }
 
 //Handler struct
@@ -29,4 +30,10 @@ func (hd *Handler) GetRates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(result)
+}
+
+//SyncData functions
+func (hd *Handler) SyncData() {
+	envelop := hd.Uc.GetXML("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml")
+	hd.Uc.DataInit(envelop)
 }

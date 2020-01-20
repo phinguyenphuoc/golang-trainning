@@ -11,6 +11,7 @@ type RepositoryInterface interface {
 	GetRateViaDate(date string) (*RateViaDate, error)
 	GetAverageCurrency() (*AverageRate, error)
 	GetLastestDate() (string, error)
+	ImportData(currency, rate, date string) error
 }
 
 //Repository struct
@@ -104,4 +105,16 @@ func (rp *Repository) GetLastestDate() (string, error) {
 		result.Scan(&date)
 	}
 	return date, nil
+}
+
+//ImportData function
+func (rp *Repository) ImportData(currency, rate, date string) error {
+	//query := fmt.Sprintf("INSERT INTO Cube(currency,rate,reg_date) VALUES('%s','%s','%s')", currency, rate, date)
+	_, err := rp.DB.Exec("INSERT INTO Cube(currency,rate,reg_date) VALUES(?,?,?)", currency, rate, date)
+	if err != nil {
+		// insert.Close()
+		return err
+	}
+	// insert.Close()
+	return nil
 }

@@ -2,6 +2,7 @@ package rates
 
 import (
 	"errors"
+	"exercise1/model"
 	"strings"
 	"testing"
 
@@ -19,6 +20,15 @@ func (m *UsecaseMock) GetRates(prefix string) (interface{}, error) {
 	return nil, args.Error(1)
 }
 
+func (m *UsecaseMock) GetXML(url string) model.Envelope {
+	args := m.Called(url)
+	return args.Get(0).(model.Envelope)
+}
+
+func (m *UsecaseMock) DataInit(data model.Envelope) error {
+	args := m.Called(data)
+	return args.Error(0)
+}
 func TestGetRatesCase1(t *testing.T) {
 	t.Run("test get rates case lastes rate success", func(*testing.T) {
 		t.Parallel()
@@ -82,4 +92,45 @@ func TestGetRatesCase3(t *testing.T) {
 		_, err := uc.GetRates(prefix)
 		assert.NotEqual(t, nil, err)
 	})
+}
+
+func TestGetXML(t *testing.T) {
+	mockRepo := new(RepositoryMock)
+	uc := NewUsecase(mockRepo)
+	data := uc.GetXML("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-hist-90d.xml")
+	assert.NotEmpty(t, data)
+}
+
+func TestDataInit(t *testing.T) {
+	t.Run("test data init success", func(t *testing.T) {
+		t.Parallel()
+		item1 := model.CubeItem{Currency: "USD", Rate: "1.5"}
+		item2 := model.CubeItem{Currency: "USD", Rate: "1.5"}
+		list := []model.CubeItem{item1, item2}
+		cube := model.Cube{Time: "2020-01-01", Cube: list}
+		listCube := []model.Cube{cube, cube}
+		cubemain := model.CubeMain{Cube: listCube}
+		envelop := model.Envelope{Cube: cubemain}
+		mockRepo := new(RepositoryMock)
+		mockRepo.On("ImportData", "USD", "1.5", "2020-01-01").Return(nil)
+		uc := NewUsecase(mockRepo)
+		err := uc.DataInit(envelop)
+		assert.Equal(t, nil, err)
+	})
+	t.Run("test data init fail", func(t *testing.T) {
+		t.Parallel()
+		item1 := model.CubeItem{Currency: "USD", Rate: "1.5"}
+		item2 := model.CubeItem{Currency: "USD", Rate: "1.5"}
+		list := []model.CubeItem{item1, item2}
+		cube := model.Cube{Time: "2020-01-01", Cube: list}
+		listCube := []model.Cube{cube, cube}
+		cubemain := model.CubeMain{Cube: listCube}
+		envelop := model.Envelope{Cube: cubemain}
+		mockRepo := new(RepositoryMock)
+		mockRepo.On("ImportData", "USD", "1.5", "2020-01-01").Return(errors.New("er"))
+		uc := NewUsecase(mockRepo)
+		err := uc.DataInit(envelop)
+		assert.NotEqual(t, nil, err)
+	})
+
 }
